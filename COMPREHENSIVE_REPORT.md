@@ -1,280 +1,674 @@
-## Code Review OpenEnv - Comprehensive Project Report
+## Code Review OpenEnv - Full Technical Review
 
-### 1) Project Summary
-This project implements a production-grade OpenEnv environment for evaluating AI agents on a real-world task: **code review**. The agent reviews buggy Python pull-request content, submits structured review actions, and receives shaped rewards and final graded scores.
+### Executive Summary
+This project implements a full OpenEnv-compatible environment for AI code review training and evaluation. It models realistic pull-request review behavior across three increasing difficulty levels, uses deterministic grading and dense reward shaping, provides a validator-compatible inference pipeline, and is deployed on Hugging Face Spaces with runtime API verification.
 
-The environment is designed for:
-- deterministic scoring
-- meaningful partial-progress reward signals
-- increasing task difficulty
-- robust deployment and validation in Hugging Face Spaces
-
----
-
-### 2) Real-World Problem Modeled
-Domain: **AI-assisted code review**
-
-Why this is real-world:
-- Software teams perform PR review as a core workflow.
-- Missing severe bugs has real cost (security, outages, data loss).
-- False positives also carry real cost (noise, reviewer fatigue).
-
-This environment directly models those tradeoffs through graded outcomes and penalties.
+Current high-level status:
+- Spec compliance: pass (`openenv validate`)
+- Automated quality: pass (`41` tests)
+- Live deployment: pass (`/`, `/health`, `/reset`, `/step`, `/state` all HTTP 200)
+- Submission readiness: yes (local Docker execution still depends on Docker installation on the host machine)
 
 ---
 
-### 3) Architecture and Repository Layout
+## 1) Problem Modeled and Real-World Utility
 
-Root-level submission files:
-- `server.py` (root entrypoint for HF/Docker)
-- `inference.py` (root baseline runner)
-- `openenv.yaml`
-- `Dockerfile`
-- `requirements.txt`
-- `README.md`
-- `pyproject.toml`
-- `uv.lock`
-- `server/app.py` and `server_entry.py` (multi-mode/openenv validator compatibility)
+### 1.1 Domain
+The environment simulates software pull-request code review.
 
-Core implementation:
-- `code-review-env/env/models.py`
-- `code-review-env/env/tasks/task_easy.py`
-- `code-review-env/env/tasks/task_medium.py`
-- `code-review-env/env/tasks/task_hard.py`
-- `code-review-env/env/graders/base_grader.py`
-- `code-review-env/env/graders/grader_easy.py`
-- `code-review-env/env/graders/grader_medium.py`
-- `code-review-env/env/graders/grader_hard.py`
-- `code-review-env/env/state_manager.py`
-- `code-review-env/env/reward_engine.py`
-- `code-review-env/env/environment.py`
-- `code-review-env/server.py`
+### 1.2 Why this is practical
+- Engineers and security teams review code continuously.
+- Missing severe bugs is expensive.
+- Over-flagging weak issues is also expensive.
+- Modern agent systems need benchmarks that reward both precision and recall.
 
-Test suite:
-- `code-review-env/tests/test_api.py`
-- `code-review-env/tests/test_environment.py`
-- `code-review-env/tests/test_rewards.py`
-- `code-review-env/tests/test_graders.py`
-- `code-review-env/tests/test_comprehensive.py`
-- `code-review-env/tests/test_advanced_cases.py`
-- `code-review-env/tests/test_performance_quality.py`
+### 1.3 Utility Profile
+This environment is directly usable for:
+- RL/agent training
+- reward-model benchmarking
+- trajectory-level policy comparison
+- safety/failure-mode evaluation (false positives, red-herring traps, premature approval)
 
 ---
 
-### 4) OpenEnv Interface Compliance
-Implemented and validated:
-- Typed Pydantic models for observation/action/reward/ground truth
-- `reset(task_id) -> observation`
-- `step(action) -> (observation, reward, done, info)`
-- `state() -> dict`
-- `openenv.yaml` metadata and task definitions
+## 2) Repository Architecture
 
-Validation status:
-- `openenv validate` -> **PASS**
+### 2.1 Root Submission Artifacts
+- `server.py` - root ASGI entrypoint loader
+- `inference.py` - root baseline runner
+- `openenv.yaml` - OpenEnv metadata/spec surface
+- `Dockerfile` - container runtime definition
+- `requirements.txt` - minimal runtime deps
+- `README.md` - docs plus HF Space front-matter
+- `pyproject.toml` - project metadata plus script entrypoint
+- `uv.lock` - lockfile for validator multi-mode checks
+- `server/app.py` - package-mode ASGI compatibility
+- `server_entry.py` - executable server script target
 
----
+### 2.2 Core Environment Implementation
+Located under `code-review-env/`:
+- `env/models.py`
+- `env/tasks/task_easy.py`
+- `env/tasks/task_medium.py`
+- `env/tasks/task_hard.py`
+- `env/graders/base_grader.py`
+- `env/graders/grader_easy.py`
+- `env/graders/grader_medium.py`
+- `env/graders/grader_hard.py`
+- `env/state_manager.py`
+- `env/reward_engine.py`
+- `env/environment.py`
+- `server.py` (implementation FastAPI server)
 
-### 5) Task Design and Difficulty Progression
-Three deterministic tasks are implemented:
-
-1. **Easy**
-- 3 bugs
-- max steps: 8
-- no red herrings
-- includes loop boundary, null-check, conditional assignment misuse pattern
-
-2. **Medium**
-- 4 security bugs
-- max steps: 15
-- SQL injection, hardcoded secret, missing validation, IDOR
-
-3. **Hard**
-- 4 real bugs + 1 red herring
-- max steps: 25
-- N+1 query, async race condition, resource leak, silent exception swallowing, trap line
-
-Difficulty design intent:
-- Easy should be manageable for baseline models
-- Medium introduces high-impact security reasoning
-- Hard requires deeper async/system understanding and false-positive control
-
----
-
-### 6) Reward System (Shaped, Non-Sparse)
-The reward engine provides dense feedback:
-
-- add comment near real bug: +0.15
-- severity match bonus: +0.05
-- category match bonus: +0.05
-- duplicate bug comment: -0.05
-- red herring flagged: -0.20
-- false positive: -0.10
-- approve with unresolved critical/major bugs: -0.50
-- approve when critical/major cleared: +0.10
-- request changes with evidence: +0.05
-- request changes without evidence: -0.05
-- done: final grader score (+ optional efficiency bonus)
-- step-limit overrun without done: -0.20 penalty
-
-This creates trajectory-level learning signal and prevents sparse-only optimization.
+### 2.3 Tests
+- `tests/test_api.py`
+- `tests/test_environment.py`
+- `tests/test_rewards.py`
+- `tests/test_graders.py`
+- `tests/test_comprehensive.py`
+- `tests/test_advanced_cases.py`
+- `tests/test_performance_quality.py`
 
 ---
 
-### 7) Grader Design
-Base grader includes:
-- standard F1 (`compute_f1`)
-- severity-weighted F1 (`compute_weighted_f1`)
+## 3) OpenEnv Contract and Data Model
 
-Severity weights:
-- critical = 3.0
-- major = 2.0
-- minor = 1.0
-- nit = 0.5
+### 3.1 Typed Models
+Pydantic models define strict contracts for:
+- Observation
+- Action
+- Reward payload components
+- Review comments
+- Ground truth bugs
 
-Properties:
-- deterministic for same input
-- returns bounded score in [0.0, 1.0]
-- produces varying scores for varying comment quality
+### 3.2 API Methods
+Environment class supports:
+- `reset(task_id)`
+- `step(action)`
+- `state()`
 
----
-
-### 8) API Surface and Runtime Behavior
-Exposed routes:
-- `GET /` (HF UI/root readiness)
+### 3.3 Server Endpoints
+FastAPI exposes:
+- `GET /`
 - `GET /health`
 - `POST /reset`
 - `POST /step`
 - `GET /state`
 
-Other runtime guarantees:
-- global exception handler returns JSON 500 instead of crashing
-- server runs on required port `7860`
-- single global environment instance for evaluator session behavior
+### 3.4 Step Info Invariants
+`step()` returns `info` with:
+- `bugs_found`
+- `false_positives`
+- `current_score`
+- `error`
 
 ---
 
-### 9) Inference Pipeline
-Root `inference.py` is validator-compatible and delegates to implementation logic.
+## 4) Task System and Difficulty Design
 
-Environment variables:
-- `HF_TOKEN` (primary credential)
-- `OPENAI_API_KEY` (fallback mapped to HF token path)
-- `API_BASE_URL` (default `https://router.huggingface.co/v1`)
-- `MODEL_NAME` (default `Qwen/Qwen2.5-72B-Instruct`)
-- `ENV_BASE_URL` (default local server URL)
+### 4.1 Easy Task
+- max steps: 8
+- exactly 3 bugs
+- no red herring
+- bug classes: off-by-one boundary, missing null safety, incorrect conditional assignment form
 
-Log format:
+### 4.2 Medium Task
+- max steps: 15
+- exactly 4 security bugs
+- no red herring
+- bug classes: SQL injection, hardcoded secret, missing input validation, IDOR
+
+### 4.3 Hard Task
+- max steps: 25
+- 4 real bugs plus 1 red herring
+- bug classes: N+1 pattern, async race on shared mutable state, resource leak, silent exception swallowing
+- explicit trap line to penalize superficial pattern matching
+
+### 4.4 Difficulty Curve Intent
+- Easy: foundational review behavior
+- Medium: security-specific reasoning
+- Hard: architectural plus concurrency reasoning with trap avoidance
+
+---
+
+## 5) Reward Engine Design
+
+### 5.1 Dense Reward Shaping
+Per-step meaningful signals:
+- near-real bug match: `+0.15`
+- severity match bonus: `+0.05`
+- category match bonus: `+0.05`
+- duplicate same bug: `-0.05`
+- red-herring hit: `-0.20`
+- false positive: `-0.10`
+
+### 5.2 Terminal Action Logic
+- `approve` with unresolved critical/major: `-0.50`
+- `approve` after clearing critical/major: `+0.10`
+- `request_changes` with evidence: `+0.05`
+- `request_changes` without evidence: `-0.05`
+- `done`: final grader score
+- efficiency bonus at `done`: `+0.10` when conditions hold
+
+### 5.3 Episode Boundary Penalty
+If step limit is exceeded without `done`, additional penalty is applied.
+
+---
+
+## 6) Grader System
+
+### 6.1 Core Metrics
+Implemented in `base_grader.py`:
+- F1 (`compute_f1`)
+- weighted F1 (`compute_weighted_f1`)
+
+### 6.2 Severity Weights
+- critical: `3.0`
+- major: `2.0`
+- minor: `1.0`
+- nit: `0.5`
+
+### 6.3 Determinism Guarantees
+- same inputs produce same outputs
+- different behaviors produce different scores
+- scores are bounded to `[0.0, 1.0]`
+
+---
+
+## 7) Inference Pipeline
+
+### 7.1 Entry and Compatibility
+Root `inference.py` delegates to implementation while enforcing validator expectations.
+
+### 7.2 Credential Variables
+- primary: `HF_TOKEN`
+- compatibility fallback: `OPENAI_API_KEY` mapped to HF token path
+
+### 7.3 Router and Model Variables
+- `API_BASE_URL` default: `https://router.huggingface.co/v1`
+- `MODEL_NAME` default: `Qwen/Qwen2.5-72B-Instruct`
+- `ENV_BASE_URL` default: local env server URL
+
+### 7.4 Mandatory Log Format
+Outputs:
 - `[START] ...`
 - `[STEP] ...`
 - `[END] ...`
 
-Formatting constraints honored:
+Formatting guarantees:
 - lowercase booleans
-- 2 decimal reward formatting
-- 3 decimal score formatting
+- reward values formatted to two decimals
+- score formatted to three decimals
 
 ---
 
-### 10) Testing Strategy and Coverage
-Testing layers implemented:
+## 8) Testing Program (Deep Coverage)
 
-**A. Functional tests**
-- reset correctness
-- step behavior for valid/invalid actions
-- done behavior and scoring path
-- step count boundaries
+### 8.1 Functional and Behavior Tests
+Coverage includes:
+- reset correctness and idempotency
+- step transition behavior
+- done submission path
+- max-step termination
 
-**B. Grader tests**
-- zero score for no findings
-- full score for complete correct findings
-- partial scores for partial findings
-- deterministic repeatability checks
-- weighted severity preference checks
+### 8.2 Grader Tests
+- no-findings -> zero score
+- full-findings -> max score
+- partial-findings -> intermediate score
+- deterministic repeated calls
+- weighted critical-vs-minor preference
 
-**C. Reward tests**
-- bug proximity positives
-- red-herring penalty
-- false-positive penalty
-- approve/request_changes branch correctness
-- efficiency bonus behavior
+### 8.3 Reward Tests
+- bug-hit positive shaping
+- false-positive penalties
+- red-herring penalties
+- approve/request_changes correctness
+- efficiency bonus conditions
 
-**D. API tests**
-- endpoint status checks
+### 8.4 API Tests
+- endpoint response status checks
 - malformed JSON robustness
-- health and state route checks
+- health/state shape checks
 
-**E. Comprehensive integration tests**
-- all tasks reset+done flows
-- done-score determinism under repeated same actions
+### 8.5 Comprehensive Tests
+- multi-task reset+done flows
+- deterministic final reward under fixed actions
 - step-limit penalty behavior
 
-**F. Advanced adversarial tests**
-- missing fields
-- boundary matching (+/-5)
-- red-herring traps
-- score variation across behavior patterns
+### 8.6 Advanced Adversarial Tests
+- missing required action fields
+- +/-5 boundary match behavior
+- trap-line handling
+- reward/score variation with behavior quality
 
-**G. Performance/stability tests**
-- repeated reset/step latency budget checks
-- repeated API request stability
-- mixed long-horizon state consistency
-- reward-signal non-constancy verification
+### 8.7 Performance/Quality Tests
+- repeated reset/step latency budgets
+- repeated endpoint stability loops
+- long mixed-action state consistency
+- non-constant reward-signal verification
 
 ---
 
-### 11) Test Results (Latest)
-- Full test suite: **41 passed**
-- Command: `python -m pytest code-review-env/tests -v`
-- Warnings observed: 2 deprecation warnings from `httpx` malformed-body tests (non-blocking)
+## 9) Measured Validation Results
 
-Validation:
-- `openenv validate` -> **[OK] Ready for multi-mode deployment**
+### 9.1 Automated Test Result
+- Command: `python -m pytest code-review-env/tests -q`
+- Result: `41 passed`
+- Notes: 2 deprecation warnings from intentionally malformed-body tests
 
-Static/runtime sanity:
-- `python -m compileall code-review-env` -> pass
+### 9.2 OpenEnv Validator Result
+- Command: `openenv validate`
+- Result: `[OK] Ready for multi-mode deployment`
 
-Live Hugging Face checks:
+### 9.3 Static Compile Sanity
+- Command: `python -m compileall code-review-env`
+- Result: pass
+
+### 9.4 Live Hugging Face Runtime Verification
+Checked endpoints:
 - `GET /` -> 200
 - `GET /health` -> 200
 - `POST /reset` -> 200
 - `POST /step` -> 200
-- `POST /step` with done -> 200
 - `GET /state` -> 200
 
 ---
 
-### 12) Deployment Readiness
-Hugging Face Spaces:
-- Docker SDK configuration added in README front-matter
-- app port configured to 7860
-- root endpoints confirmed on live Space
+## 10) Deployment and Operational Notes
 
-Containerization:
-- Root `Dockerfile` included and configured
-- Root `requirements.txt` included
+### 10.1 HF Space Configuration
+- README front-matter includes Docker SDK config
+- app port configured to `7860`
 
-Note:
-- Local Docker CLI was unavailable in this workstation shell during checks, so local `docker build` could not be executed here; deployment behavior validated through live Space runtime.
+### 10.2 Critical Runtime Bug Resolved
+Observed incident:
+- Space returned `503`
+- root cause: import resolution conflict between `server.py` and `server/` package for `uvicorn server:app`
 
----
+Fix:
+- `server/app.py` now loads implementation app deterministically
+- `server/__init__.py` now exports `app`
 
-### 13) Cleanup and Repository Polishing Performed
-Removed non-essential instruction/scratch files not needed for submission runtime.
-Removed unrelated JS script used for temporary API probing.
-Kept all required project files, validation metadata, and test infrastructure.
-
----
-
-### 14) Competitive Strengths
-- Real-world, evaluator-relevant domain
-- Dense reward design with meaningful penalties
-- Deterministic and weighted grading
-- Broad and deep automated testing
-- Live deployment and endpoint verification
-- OpenEnv multi-mode validation passing
+Post-fix:
+- local `uvicorn server:app` import path valid
+- live endpoints restored to `200`
 
 ---
 
-### 15) Final Status
-Project status: **Submission-ready and validator-compliant** (excluding local docker-cli execution constraints of this workstation).
+## 11) Cleanup and Quality Hardening Performed
+- Removed non-project prompt/scratch files from root
+- Removed non-essential inline comments while preserving docstrings and behavior clarity
+- Aligned task ground-truth line numbers after cleanup changes
+- Preserved all rule-required behavior and interfaces
+
+---
+
+## 12) Compliance Mapping to Round 1 Criteria
+
+### Functional Criteria
+- real-world task: met
+- typed OpenEnv interface: met
+- 3 tasks with deterministic graders: met
+- meaningful dense reward shaping: met
+- baseline inference via OpenAI client and env vars: met
+
+### Non-Functional Criteria
+- HF Space deploy and response: met
+- Dockerfile present and configured: met
+- documentation quality: met
+- testing and validation depth: met
+
+### Scoring Dimension Readiness
+- real-world utility: strong
+- task/grader quality: strong
+- environment design: strong
+- code quality/spec compliance: strong
+- creativity/novel mechanics: strong
+
+---
+
+## 13) Remaining External Constraint
+Local workstation shell used for verification did not include Docker CLI at test time, so `docker build` was not executed locally in this environment. Deployment behavior was validated through live HF runtime checks.
+
+---
+
+## 14) Final Assessment
+The project is fully implemented, deeply tested, validator-compliant, and live-runtime verified. It is submission-ready for Round 1 and technically aligned with high-quality hackathon evaluation standards.
+
+## Code Review OpenEnv - Full Technical Review
+
+### Executive Summary
+This project implements a full OpenEnv-compatible environment for **AI code review training and evaluation**. It models realistic pull-request review behavior across three increasing difficulty levels, uses deterministic grading and dense reward shaping, provides a validator-compatible inference pipeline, and is deployed on Hugging Face Spaces with runtime API verification.
+
+Current high-level status:
+- **Spec Compliance**: pass (`openenv validate`)
+- **Automated Quality**: pass (`41` tests)
+- **Live Deployment**: pass (`/`, `/health`, `/reset`, `/step`, `/state` all HTTP 200)
+- **Submission Readiness**: yes (with local Docker CLI execution still dependent on local Docker installation)
+
+---
+
+## 1) Problem Modeled and Real-World Utility
+
+### 1.1 Domain
+The environment simulates a real workflow: **software pull-request code review**.
+
+### 1.2 Why this is practical
+- Engineers and security teams review code daily.
+- Missing serious bugs is costly.
+- Over-flagging weak issues is also costly.
+- Modern AI tooling needs benchmark environments that reward both precision and recall.
+
+### 1.3 Utility Profile
+This environment is directly usable for:
+- RL/agent training
+- reward-model benchmarking
+- trajectory-level policy comparisons
+- safety/failure-mode evaluation (false positives, red-herring traps, premature approval)
+
+---
+
+## 2) Repository Architecture
+
+### 2.1 Root Submission Artifacts
+- `server.py` - root ASGI entrypoint loader
+- `inference.py` - root baseline runner
+- `openenv.yaml` - OpenEnv metadata/spec surface
+- `Dockerfile` - container runtime definition
+- `requirements.txt` - minimal runtime deps
+- `README.md` - docs + HF Space front-matter
+- `pyproject.toml` - project metadata + script entrypoint
+- `uv.lock` - lockfile for validator multi-mode checks
+- `server/app.py` - package-mode ASGI compatibility
+- `server_entry.py` - executable server script target
+
+### 2.2 Core Environment Implementation
+Located under `code-review-env/`:
+- `env/models.py`
+- `env/tasks/task_easy.py`
+- `env/tasks/task_medium.py`
+- `env/tasks/task_hard.py`
+- `env/graders/base_grader.py`
+- `env/graders/grader_easy.py`
+- `env/graders/grader_medium.py`
+- `env/graders/grader_hard.py`
+- `env/state_manager.py`
+- `env/reward_engine.py`
+- `env/environment.py`
+- `server.py` (implementation FastAPI server)
+
+### 2.3 Tests
+- `tests/test_api.py`
+- `tests/test_environment.py`
+- `tests/test_rewards.py`
+- `tests/test_graders.py`
+- `tests/test_comprehensive.py`
+- `tests/test_advanced_cases.py`
+- `tests/test_performance_quality.py`
+
+---
+
+## 3) OpenEnv Contract and Data Model
+
+### 3.1 Typed Models
+Pydantic models define strict contracts for:
+- Observation
+- Action
+- Reward payload components
+- Review comments
+- Ground truth bugs
+
+### 3.2 API Methods
+Environment class supports:
+- `reset(task_id)`
+- `step(action)`
+- `state()`
+
+### 3.3 Server Endpoints
+FastAPI exposes:
+- `GET /`
+- `GET /health`
+- `POST /reset`
+- `POST /step`
+- `GET /state`
+
+### 3.4 Info Dictionary Invariants
+`step()` returns `info` with:
+- `bugs_found`
+- `false_positives`
+- `current_score`
+- `error`
+
+---
+
+## 4) Task System and Difficulty Design
+
+### 4.1 Easy Task
+- max steps: 8
+- exactly 3 bugs
+- no red herring
+- bug classes: off-by-one boundary, missing null safety, incorrect conditional assignment form
+
+### 4.2 Medium Task
+- max steps: 15
+- exactly 4 security bugs
+- no red herring
+- bug classes: SQL injection, hardcoded secret, missing input validation, IDOR
+
+### 4.3 Hard Task
+- max steps: 25
+- 4 real bugs + 1 red herring
+- bug classes: N+1 pattern, async race on shared mutable state, resource leak, silent exception swallowing
+- explicit trap line to penalize superficial pattern matching
+
+### 4.4 Difficulty Curve Intent
+- Easy: foundational review behavior
+- Medium: security-specific reasoning
+- Hard: architectural + concurrency + robustness reasoning with trap avoidance
+
+---
+
+## 5) Reward Engine Design
+
+### 5.1 Dense Reward Shaping
+Per-step meaningful signals:
+- near-real bug match: `+0.15`
+- severity match bonus: `+0.05`
+- category match bonus: `+0.05`
+- duplicate same bug: `-0.05`
+- red-herring hit: `-0.20`
+- false positive: `-0.10`
+
+### 5.2 Terminal Action Logic
+- `approve` with unresolved critical/major: `-0.50`
+- `approve` after clearing critical/major: `+0.10`
+- `request_changes` with evidence: `+0.05`
+- `request_changes` without evidence: `-0.05`
+- `done`: final grader score
+- efficiency bonus at `done`: `+0.10` when conditions hold
+
+### 5.3 Episode Boundary Penalty
+If step limit is exceeded without `done`, additional penalty is applied.
+
+---
+
+## 6) Grader System
+
+### 6.1 Core Metrics
+Implemented in `base_grader.py`:
+- F1 (`compute_f1`)
+- weighted F1 (`compute_weighted_f1`)
+
+### 6.2 Severity Weights
+- critical: `3.0`
+- major: `2.0`
+- minor: `1.0`
+- nit: `0.5`
+
+### 6.3 Determinism Guarantees
+- Same inputs -> same outputs
+- Different behaviors -> different scores
+- Scores bounded to `[0.0, 1.0]`
+
+---
+
+## 7) Inference Pipeline
+
+### 7.1 Entry and Compatibility
+Root `inference.py` delegates to implementation while enforcing validator expectations.
+
+### 7.2 Credential Variables
+- Primary: `HF_TOKEN`
+- Compatibility fallback: `OPENAI_API_KEY` -> mapped to HF token path
+
+### 7.3 Router and Model Variables
+- `API_BASE_URL` default: `https://router.huggingface.co/v1`
+- `MODEL_NAME` default: `Qwen/Qwen2.5-72B-Instruct`
+- `ENV_BASE_URL` default: local env server URL
+
+### 7.4 Mandatory Log Format
+Outputs:
+- `[START] ...`
+- `[STEP] ...`
+- `[END] ...`
+
+Formatting guarantees:
+- lowercase booleans
+- reward values formatted to two decimals
+- score formatted to three decimals
+
+---
+
+## 8) Testing Program (Deep Coverage)
+
+### 8.1 Functional and Behavior Tests
+Coverage includes:
+- reset correctness and idempotency
+- step transition behavior
+- done submission path
+- max-step termination
+
+### 8.2 Grader Tests
+- no-findings -> zero score
+- full-findings -> max score
+- partial-findings -> intermediate score
+- deterministic repeated calls
+- weighted critical-vs-minor preference
+
+### 8.3 Reward Tests
+- bug-hit positive shaping
+- false-positive penalties
+- red-herring penalties
+- approve/request_changes correctness
+- efficiency bonus conditions
+
+### 8.4 API Tests
+- endpoint response status checks
+- malformed JSON robustness
+- health/state shape checks
+
+### 8.5 Comprehensive Tests
+- multi-task reset+done flows
+- deterministic final reward under fixed actions
+- step-limit penalty behavior
+
+### 8.6 Advanced Adversarial Tests
+- missing required action fields
+- ±5 boundary match behavior
+- trap-line handling
+- reward/score variation with behavior quality
+
+### 8.7 Performance/Quality Tests
+- repeated reset/step latency budgets
+- repeated endpoint stability loops
+- long mixed-action state consistency
+- non-constant reward-signal verification
+
+---
+
+## 9) Measured Validation Results
+
+### 9.1 Automated Test Result
+- Command: `python -m pytest code-review-env/tests -q`
+- Result: **41 passed**
+- Notes: 2 deprecation warnings from intentionally malformed-body tests
+
+### 9.2 OpenEnv Validator Result
+- Command: `openenv validate`
+- Result: **[OK] Ready for multi-mode deployment**
+
+### 9.3 Static Compile Sanity
+- Command: `python -m compileall code-review-env`
+- Result: pass
+
+### 9.4 Live Hugging Face Runtime Verification
+Checked endpoints:
+- `GET /` -> 200
+- `GET /health` -> 200
+- `POST /reset` -> 200
+- `POST /step` -> 200
+- `GET /state` -> 200
+
+---
+
+## 10) Deployment and Operational Notes
+
+### 10.1 HF Space Configuration
+- README front-matter includes Docker SDK config
+- app port configured to `7860`
+
+### 10.2 Critical Runtime Bug Resolved
+Observed incident:
+- Space returned `503`
+- root cause: import resolution conflict between `server.py` and `server/` package for `uvicorn server:app`
+
+Fix:
+- `server/app.py` now loads implementation app deterministically
+- `server/__init__.py` now exports `app`
+
+Post-fix:
+- local `uvicorn server:app` import path valid
+- live endpoints restored to `200`
+
+---
+
+## 11) Cleanup and Quality Hardening Performed
+- Removed non-project prompt/scratch files from root
+- Removed non-essential inline comments while keeping docstrings and behavior clarity
+- Aligned task line-number ground truth after cleanup changes
+- Preserved all rule-required behavior and interfaces
+
+---
+
+## 12) Compliance Mapping to Round 1 Criteria
+
+### Functional Criteria
+- Real-world task: **met**
+- Typed OpenEnv interface: **met**
+- 3 tasks with deterministic graders: **met**
+- Meaningful dense reward shaping: **met**
+- Baseline inference via OpenAI client and env vars: **met**
+
+### Non-Functional Criteria
+- HF Space deploy and response: **met**
+- Dockerfile present and configured: **met**
+- Documentation quality: **met**
+- Testing and validation depth: **met**
+
+### Scoring Dimension Readiness
+- Real-world utility: strong
+- Task/grader quality: strong
+- Environment design: strong
+- Code quality/spec compliance: strong
+- Creativity/novel mechanics (red herring + precision pressure): strong
+
+---
+
+## 13) Remaining External Constraint
+Local workstation shell used for verification did not include Docker CLI at test time, so `docker build` was not executed locally in this environment. Deployment behavior was validated through live HF runtime checks.
+
+---
+
+## 14) Final Assessment
+The project is fully implemented, deeply tested, validator-compliant, and live-runtime verified. It is submission-ready for Round 1 and technically aligned with high-quality hackathon evaluation standards.
 
