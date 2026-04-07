@@ -31,6 +31,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(status_code=422, content={"error": str(exc)})
 
 
+@app.get("/")
+async def root() -> Dict[str, str]:
+    """Root route for HF Spaces UI health."""
+
+    return {"status": "ok", "message": "Code Review OpenEnv is running. See /health, /reset, /step, /state."}
+
+
 @app.post("/reset", response_model=CodeReviewObservation)
 async def reset(payload: Optional[Dict[str, Any]] = Body(default=None)) -> CodeReviewObservation:
     """Reset the environment for a given task_id (defaults to easy)."""
