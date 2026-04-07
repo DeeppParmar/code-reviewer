@@ -1,3 +1,13 @@
+---
+title: Code Review OpenEnv
+emoji: "\U0001F50E"
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 ## Environment Overview
 This repository contains **Code Review OpenEnv**, a production-grade evaluation environment where an AI agent plays the role of a code reviewer. The agent receives buggy Python pull-request content, leaves line-specific review comments, and is scored on finding real bugs while avoiding false positives. This mirrors real-world engineering outcomes: missing critical issues is costly, but noisy reviews are also penalized.
 
