@@ -24,7 +24,7 @@ This repository contains **Code Review OpenEnv**, a production-grade evaluation 
 | `done` | (no parameters) |
 
 ## Task Descriptions
-**Easy**: A small data-processing utility with 3 real bugs (indexing off-by-one, missing null check, and an error-prone conditional pattern). Expected baseline score: ~0.65–0.75.
+**Easy**: A small data-processing utility with 3 real bugs (indexing off-by-one, missing null check, and an error-prone conditional assignment pattern). Expected baseline score: ~0.65–0.75.
 
 **Medium**: A web handler with 4 security vulnerabilities (SQL injection, hardcoded secret, missing input validation leading to XSS risk, and an IDOR). Expected baseline score: ~0.40–0.55.
 
@@ -55,7 +55,7 @@ The grader computes **(weighted) F1** using severity-based weights (critical=3, 
 python -m venv .venv
 . .venv/bin/activate  # on Windows: .venv\Scripts\activate
 python -m pip install -r requirements.txt
-python -m pytest code-review-env/tests -v
+python -m pytest tests -v
 uvicorn server:app --host 0.0.0.0 --port 7860
 ```
 
