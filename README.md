@@ -65,7 +65,8 @@ The grader computes **(weighted) F1** using severity-based weights (critical=3, 
 python -m venv .venv
 . .venv/bin/activate  # on Windows: .venv\Scripts\activate
 python -m pip install -r requirements.txt
-python -m pytest code-review-env/tests -v
+python -m pytest code-review-env/tests -q
+openenv validate
 uvicorn server:app --host 0.0.0.0 --port 7860
 ```
 
@@ -76,7 +77,7 @@ docker run -p 7860:7860 code-review-env
 ```
 
 ## HF Space Deployment
-Link: (add your deployed Space URL here)
+Link: https://deepparmar-code-review.hf.space
 
 ## Baseline Scores
 | Task | Model | Score |
@@ -84,4 +85,9 @@ Link: (add your deployed Space URL here)
 | easy | `Qwen/Qwen2.5-72B-Instruct` | TBD |
 | medium | `Qwen/Qwen2.5-72B-Instruct` | TBD |
 | hard | `Qwen/Qwen2.5-72B-Instruct` | TBD |
+
+## Validation Snapshot
+- `python -m pytest code-review-env/tests -q` -> `41 passed`
+- `openenv validate` -> `[OK] Ready for multi-mode deployment`
+- Live HF endpoints (`/`, `/health`, `/reset`, `/step`, `/state`) return HTTP 200
 
