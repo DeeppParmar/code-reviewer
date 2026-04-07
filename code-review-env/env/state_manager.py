@@ -60,7 +60,6 @@ class StateManager:
         self.cumulative_reward += reward
         self.last_error = error
 
-        # Step increments after handling the action.
         self.step_number += 1
 
         if action.operation in {"done", "approve", "request_changes"}:

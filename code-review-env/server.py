@@ -13,7 +13,6 @@ from env.models import CodeReviewAction, CodeReviewObservation
 
 app = FastAPI()
 
-# Single global env instance (single-session evaluation).
 ENV = CodeReviewEnv()
 
 

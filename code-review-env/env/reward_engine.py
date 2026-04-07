@@ -193,7 +193,6 @@ class RewardEngine:
         if action.operation == "done":
             final_score = self._grade(comments_so_far)
             reward = float(final_score)
-            # Efficiency bonus
             if steps_used_after_this < int(0.6 * self._max_steps) and final_score > 0.8:
                 reward += 0.10
             return RewardOutcome(

@@ -75,7 +75,6 @@ def test_efficiency_bonus_triggers() -> None:
 
     gt = [GroundTruthBug(line_number=10, severity="major", category="bug", description="x")]
     engine = RewardEngine(task_id="easy", ground_truth=gt, max_steps=10)
-    # Arrange comments so grader returns 1.0 (score > 0.8), and steps_used < 6.
     comments = [ReviewComment(line_number=10, severity="major", category="bug", message="x", step_added=1)]
     action = CodeReviewAction(operation="done")
     outcome = engine.compute(

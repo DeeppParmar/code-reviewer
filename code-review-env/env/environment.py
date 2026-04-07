@@ -144,13 +144,11 @@ class CodeReviewEnv:
             reward = outcome.reward
             self._state.record_action(action, reward, error=None)
 
-        # Done conditions
         done = False
         if action.operation in {"done", "approve", "request_changes"}:
             done = True
         if self._state.step_number > self._max_steps:
             done = True
-            # Step limit exceeded without done: penalty added to running score.
             if action.operation != "done":
                 self._state.cumulative_reward += -0.20
 

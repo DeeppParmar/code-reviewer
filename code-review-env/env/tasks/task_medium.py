@@ -53,9 +53,7 @@ def get_task() -> TaskSpec:
             "    api_key = \"sk_live_51HARD_CODED_SECRET\"",
             "    query = \"SELECT id, owner_id, content FROM profiles WHERE id = '\" + requested_user_id + \"'\"",
             "    row = db.fetch_one(query)",
-            "    # q is used as a display name override when present",
             "    html = render_profile_html(q)",
-            "    # IDOR: trusts requested_user_id without checking ownership/authorization",
             "    return {\"api_key\": api_key, \"profile_id\": row[\"id\"], \"html\": html, \"owner\": row[\"owner_id\"]}",
             "",
         ]
@@ -89,13 +87,13 @@ def get_task() -> TaskSpec:
             description="SQL injection: query built via string concatenation using user-controlled requested_user_id.",
         ),
         GroundTruthBug(
-            line_number=25,
+            line_number=23,
             severity="major",
             category="security",
             description="Missing input validation: user-controlled q is used directly in HTML rendering, enabling XSS with crafted input.",
         ),
         GroundTruthBug(
-            line_number=26,
+            line_number=24,
             severity="critical",
             category="security",
             description="IDOR: no authorization check that current_user_id can access requested_user_id profile/resource.",

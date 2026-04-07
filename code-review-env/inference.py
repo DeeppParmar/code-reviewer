@@ -39,7 +39,7 @@ def _safe_json_loads(text: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]
         if isinstance(obj, dict):
             return obj, None
         return None, "Model output was not a JSON object"
-    except Exception as e:  # noqa: BLE001 - intentional fallback path for robustness
+    except Exception as e:
         return None, str(e)
 
 
@@ -184,7 +184,7 @@ def run_task(task_id: str, *, env_base_url: str, model_name: str, hf_token: str,
                     break
 
             success = score >= 0.5
-    except Exception as e:  # noqa: BLE001 - ensure END always prints
+    except Exception as e:
         success = False
         if steps_taken == 0:
             steps_taken = 1
@@ -203,7 +203,6 @@ def main() -> int:
         print("HF_TOKEN is required", file=sys.stderr)
         return 2
 
-    # Per spec: default API_BASE_URL if env var not set.
     os.environ.setdefault("API_BASE_URL", "https://router.huggingface.co/v1")
 
     for task_id, timeout_s in [("easy", 360), ("medium", 360), ("hard", 360)]:

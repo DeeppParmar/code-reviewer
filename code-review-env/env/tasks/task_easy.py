@@ -28,7 +28,6 @@ class TaskSpec:
 def get_task() -> TaskSpec:
     """Return the easy task specification (buggy code + ground truth)."""
 
-    # IMPORTANT: line numbers in ground_truth must match this exact string.
     full_file = "\n".join(
         [
             "from __future__ import annotations",
@@ -51,18 +50,17 @@ def get_task() -> TaskSpec:
             "    for i in range(len(items)):",
             "        left = items[i]",
             "        right = items[i + 1]",
-            "        if left.value < 0:  # type: ignore[union-attr]",
+            "        if left.value < 0:",
             "            continue",
             "        delta = right.value - left.value",
             "        include = False",
-            "        if (include := delta > 0):",
+            "        if include = delta > 0:",
             "            deltas.append(delta)",
             "    return deltas",
             "",
         ]
     )
 
-    # Unified diff is used for context; keep consistent with full_file.
     code_diff = "\n".join(
         [
             "--- a/utils.py",
@@ -77,13 +75,12 @@ def get_task() -> TaskSpec:
             "+            continue",
             "+        delta = right.value - left.value",
             "+        include = False",
-            "+        if (include := delta > 0):",
+            "+        if include = delta > 0:",
             "+            deltas.append(delta)",
             "+    return deltas",
         ]
     )
 
-    # Line numbers computed from the full_file above (1-indexed).
     ground_truth = [
         GroundTruthBug(
             line_number=18,
@@ -98,10 +95,10 @@ def get_task() -> TaskSpec:
             description="Missing null check: left can be None; accessing left.value crashes when None is present in the list.",
         ),
         GroundTruthBug(
-            line_number=26,
+            line_number=25,
             severity="minor",
             category="bug",
-            description="Uses assignment (walrus) instead of an equality-style guard; this pattern is error-prone and can incorrectly treat all positive deltas as included regardless of intended condition.",
+            description="Uses assignment '=' inside a conditional instead of '==', causing a syntax/logic error and making the condition invalid.",
         ),
     ]
 
