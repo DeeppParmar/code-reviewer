@@ -76,9 +76,9 @@ A deterministic, OpenEnv-style benchmark environment for evaluating AI code revi
 
 | Task | Benchmark Mode | LLM Mode |
 |------|:-:|:-:|
-| easy | **1.750** | 1.750 |
-| medium | **2.100** | 2.100 |
-| hard | **2.100** | 2.100 |
+| easy | **1.000** | 1.000 |
+| medium | **1.000** | 1.000 |
+| hard | **1.000** | 1.000 |
 
 ---
 
@@ -86,7 +86,7 @@ A deterministic, OpenEnv-style benchmark environment for evaluating AI code revi
 
 ```bash
 pip install -r requirements.txt
-python -m pytest code-review-env/tests -q      # 41 passed
+python -m pytest code-review-env/tests -q      # 52 passed
 uvicorn server:app --host 0.0.0.0 --port 7860  # run server
 ```
 
@@ -110,6 +110,6 @@ HF_TOKEN=<token> REVIEW_STRATEGY=llm python inference.py
 
 ## Validation
 
-- `pytest` → **41 passed**
+- `pytest` → **52 passed**
 - `openenv validate` → **Ready for multi-mode deployment**
 - All live endpoints return HTTP 200

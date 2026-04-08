@@ -152,10 +152,12 @@ class CodeReviewEnv:
             if action.operation != "done":
                 self._state.cumulative_reward += -0.20
 
+        # Clamp cumulative score to [0.0, 1.0] per OpenEnv spec.
+        clamped_score = max(0.0, min(1.0, self._state.cumulative_reward))
         info = {
             "bugs_found": len(self._state.correctly_identified_bug_lines),
             "false_positives": self._state.get_false_positive_count(),
-            "current_score": self._state.cumulative_reward,
+            "current_score": clamped_score,
             "error": error,
         }
 

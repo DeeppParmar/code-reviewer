@@ -73,7 +73,7 @@ def test_approve_with_unfound_critical_or_major_penalty() -> None:
     obs, reward, done, info = env.step(CodeReviewAction(operation="approve", summary="LGTM"))
     assert done is True
     assert reward <= -0.50
-    assert info["current_score"] <= 0.0
+    assert info["current_score"] == 0.0
 
 
 def test_done_returns_final_grader_score() -> None:

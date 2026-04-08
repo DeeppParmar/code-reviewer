@@ -14,7 +14,7 @@ env/
 └── tasks/              # Task definitions (easy, medium, hard)
 server.py               # FastAPI endpoints
 inference.py            # Inference runner (LLM + benchmark modes)
-tests/                  # Pytest suite (41 tests)
+tests/                  # Pytest suite (52 tests)
 ```
 
 ## Endpoints
@@ -38,5 +38,5 @@ Features: schema normalization, line clamping, early-stop on complete findings, 
 ## Tests
 
 ```bash
-python -m pytest tests -v   # 41 passed
+python -m pytest tests -v   # 52 passed
 ```

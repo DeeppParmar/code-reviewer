@@ -1,0 +1,8 @@
+....................................................                     [100%]
+============================== warnings summary ===============================
+code-review-env/tests/test_advanced_cases.py::test_api_step_rejects_malformed_body_with_422
+code-review-env/tests/test_api.py::test_server_does_not_crash_on_malformed_json
+  C:\Users\Abhi\AppData\Roaming\Python\Python313\site-packages\httpx\_models.py:408: DeprecationWarning: Use 'content=<...>' to upload raw bytes/text content.
+    headers, stream = encode_request(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
