@@ -10,14 +10,23 @@ pinned: false
 
 # Code Review OpenEnv
 
-A deterministic, OpenEnv-style benchmark environment for evaluating AI code review agents. The agent receives buggy Python pull requests, leaves structured review comments, and is graded on precision and recall against ground-truth bugs.
+A deterministic, OpenEnv-style benchmark environment for evaluating AI code review agents. The agent receives buggy Python pull requests, leaves structured review comments, and is graded on precision, recall, and **semantic understanding** against ground-truth bugs.
 
 **Live Space:** https://deepparmar-code-review.hf.space
 
 ---
 
-## Architecture Blueprint & Documentation
-For a complete, highly detailed report containing logic flows, error handling protocols, strict bounds verification, and testing infrastructure mechanisms.
+## What Makes This Environment Unique
+
+| Feature | Description |
+|---|---|
+| **Semantic "Why" Metric** | Models must explain *why* something is a bug, not just flag the line. Missing required keywords (e.g. `"ecb"`, `"lock"`) halves the precision credit. |
+| **Red Herring Traps** | Deliberately planted code that *looks* buggy but is semantically correct. Penalizes statistical pattern-matching over true comprehension. |
+| **Multi-Model Benchmarking** | Built-in orchestrator (`benchmark_models.py`) to compare 5+ frontier LLMs head-to-head across all difficulty tiers. |
+| **Fault-Tolerant Inference** | Gracefully handles API credit depletion (HTTP 402), malformed LLM output, and schema violations without crashing. |
+| **Dense Reward Shaping** | Non-sparse, per-step rewards guide RL agents toward optimal review strategies. |
+
+📄 **[Architecture Blueprint](ARCHITECTURE_BLUEPRINT.md)** · 📄 **[Findings Paper](FINDINGS_PAPER.md)**
 
 ---
 
@@ -55,11 +64,11 @@ For a complete, highly detailed report containing logic flows, error handling pr
 
 ## Tasks
 
-| Task | Domain | Bugs | Description |
-|------|--------|------|-------------|
-| **easy** | List processing | 3 | Off-by-one, null check, bad conditional |
-| **medium** | Web handler | 4 | SQL injection, XSS, IDOR, hardcoded secret |
-| **hard** | Async service | 4 + 1 trap | Resource leak, N+1, race condition, silent swallow |
+| Task | Domain | Bugs | Semantic Keywords | Description |
+|------|--------|------|:-:|-------------|
+| **easy** | List processing | 3 | — | Off-by-one, null check, bad conditional |
+| **medium** | Web handler | 4 | — | SQL injection, XSS, IDOR, hardcoded secret |
+| **hard** | Async crypto service | 4 + 1 trap | ✓ | Unsafe YAML, ECB cipher, generator leak, race condition |
 
 ## Reward Function
 
@@ -67,6 +76,7 @@ For a complete, highly detailed report containing logic flows, error handling pr
 |---|---:|
 | Correct bug comment (first match ±5 lines) | +0.15 |
 | Severity / category match bonus (each) | +0.05 |
+| **Semantic keyword miss** (hard task) | **−0.10** |
 | Duplicate comment | −0.05 |
 | False positive | −0.10 |
 | Red herring match | −0.20 |
@@ -77,13 +87,22 @@ For a complete, highly detailed report containing logic flows, error handling pr
 
 ---
 
-## Scores
+## Multi-Model Benchmarking
 
-| Task | Benchmark Mode | LLM Mode |
-|------|:-:|:-:|
-| easy | **1.000** | 1.000 |
-| medium | **1.000** | 1.000 |
-| hard | **1.000** | 1.000 |
+Run the built-in benchmarking orchestrator to evaluate multiple frontier models:
+
+```bash
+HF_TOKEN=<token> python benchmark_models.py
+```
+
+**Models tested:**
+- `Qwen/Qwen2.5-72B-Instruct`
+- `meta-llama/Llama-3-70b-chat-hf`
+- `mistralai/Mixtral-8x7B-Instruct-v0.1`
+- `google/gemma-2-27b-it`
+- `deepseek-ai/DeepSeek-Coder-V2-Instruct`
+
+Results are saved incrementally to `benchmark_results.json`. The orchestrator handles API rate limits and credit depletion gracefully.
 
 ---
 

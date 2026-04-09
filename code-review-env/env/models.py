@@ -74,5 +74,6 @@ class GroundTruthBug(BaseModel):
     severity: Literal["critical", "major", "minor", "nit"]
     category: Literal["bug", "security", "performance", "style"]
     description: str = Field(..., min_length=1)
+    required_keywords: List[str] = Field(default_factory=list)
     is_red_herring: bool = False
 

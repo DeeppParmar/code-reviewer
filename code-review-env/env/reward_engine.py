@@ -132,11 +132,25 @@ class RewardEngine:
             base = 0.15
             sev_bonus = 0.05 if action.severity == matched.severity else 0.0
             cat_bonus = 0.05 if action.category == matched.category else 0.0
-            reward = min(0.25, base + sev_bonus + cat_bonus)
+            semantic_penalty = 0.0
+
+            # Semantic Understanding Check (The "Why" Metric)
+            if matched.required_keywords and action.message:
+                msg_lower = action.message.lower()
+                has_keyword = any(kw.lower() in msg_lower for kw in matched.required_keywords)
+                if not has_keyword:
+                    semantic_penalty = -0.10
+
+            reward = min(0.25, base + sev_bonus + cat_bonus) + semantic_penalty
+            
+            # If they failed the semantic check, we do NOT register this line as fully correctly identified.
+            # We flag it internally so the agent still gets a partial shape reward but fails final grading.
+            registered_line = None if semantic_penalty < 0 else matched.line_number
+
             return RewardOutcome(
                 reward=reward,
-                reason="Correct bug proximity match",
-                correctly_identified_bug_line=matched.line_number,
+                reason="Correct proximity but missed semantic 'why'" if semantic_penalty < 0 else "Correct bug proximity match",
+                correctly_identified_bug_line=registered_line,
                 is_false_positive=False,
                 is_red_herring_flag=False,
                 is_duplicate=False,
