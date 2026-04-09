@@ -16,6 +16,11 @@ A deterministic, OpenEnv-style benchmark environment for evaluating AI code revi
 
 ---
 
+## Architecture Blueprint & Documentation
+For a complete, highly detailed report containing logic flows, error handling protocols, strict bounds verification, and testing infrastructure mechanisms, please read the **[Architecture Blueprint](ARCHITECTURE_BLUEPRINT.md)**.
+
+---
+
 ## Key Features
 
 - **FastAPI server** with `reset` / `step` / `state` endpoints
