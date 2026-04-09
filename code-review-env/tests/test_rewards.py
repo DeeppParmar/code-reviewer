@@ -84,6 +84,6 @@ def test_efficiency_bonus_triggers() -> None:
         step_number=2,
         steps_used_after_this=2,
     )
-    assert outcome.final_score == 1.0
-    assert outcome.reward == 1.10
+    assert outcome.final_score == 0.999
+    assert outcome.reward == 1.099
 

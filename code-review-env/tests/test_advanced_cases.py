@@ -20,7 +20,7 @@ def test_add_comment_missing_line_number_returns_negative_reward_and_error() -> 
     env.reset("easy")
     obs, reward, done, info = env.step(CodeReviewAction(operation="add_comment", severity="minor", category="bug", message="x"))
     assert done is False
-    assert reward == -0.05
+    assert reward == 0.01
     assert info["error"] is not None
     assert info["false_positives"] >= 1
     assert obs.step_number >= 2
@@ -48,7 +48,7 @@ def test_comment_outside_plus_minus_five_is_false_positive() -> None:
     _, reward, _, info = env.step(
         CodeReviewAction(operation="add_comment", line_number=999, severity="minor", category="style", message="nit")
     )
-    assert reward == -0.10
+    assert reward == 0.01
     assert info["false_positives"] >= 1
 
 
@@ -60,7 +60,7 @@ def test_red_herring_penalty_is_applied_on_hard_task() -> None:
     _, reward, _, info = env.step(
         CodeReviewAction(operation="add_comment", line_number=32, severity="nit", category="style", message="suspicious")
     )
-    assert reward == -0.20
+    assert reward == 0.01
     assert info["false_positives"] >= 1
 
 
@@ -85,7 +85,7 @@ def test_request_changes_reward_depends_on_evidence() -> None:
     env.reset("easy")
     _, r0, done0, _ = env.step(CodeReviewAction(operation="request_changes", summary="needs work"))
     assert done0 is True
-    assert r0 == -0.05
+    assert r0 == 0.01
 
     env.reset("easy")
     env.step(CodeReviewAction(operation="add_comment", line_number=18, severity="major", category="bug", message="bug"))

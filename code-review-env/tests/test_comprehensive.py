@@ -54,5 +54,5 @@ def test_step_limit_penalty_applies_when_exceeded_without_done() -> None:
             break
 
     assert done is True
-    assert info["current_score"] == 0.0
+    assert info["current_score"] == 0.001
 

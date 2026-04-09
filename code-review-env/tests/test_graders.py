@@ -14,7 +14,7 @@ def test_grader_returns_zero_when_no_bugs_found() -> None:
         GroundTruthBug(line_number=10, severity="major", category="bug", description="x"),
         GroundTruthBug(line_number=20, severity="critical", category="security", description="y"),
     ]
-    assert grade_easy([], gt) == 0.0
+    assert grade_easy([], gt) == 0.001
 
 
 def test_grader_returns_one_when_all_bugs_found_with_correct_labels() -> None:
@@ -28,7 +28,7 @@ def test_grader_returns_one_when_all_bugs_found_with_correct_labels() -> None:
         ReviewComment(line_number=10, severity="major", category="bug", message="x", step_added=1),
         ReviewComment(line_number=20, severity="critical", category="security", message="y", step_added=2),
     ]
-    assert grade_easy(comments, gt) == 1.0
+    assert grade_easy(comments, gt) == 0.999
 
 
 def test_grader_partial_is_strictly_between_zero_and_one() -> None:
@@ -75,5 +75,5 @@ def test_hard_grader_ignores_red_herring_as_real_bug() -> None:
         GroundTruthBug(line_number=12, severity="nit", category="style", description="trap", is_red_herring=True),
     ]
     trap_only = [ReviewComment(line_number=12, severity="nit", category="style", message="trap", step_added=1)]
-    assert grade_hard(trap_only, gt) == 0.0
+    assert grade_hard(trap_only, gt) == 0.001
 

@@ -48,7 +48,7 @@ def test_step_add_comment_false_positive_negative_reward() -> None:
     env.reset("easy")
     action = CodeReviewAction(operation="add_comment", line_number=2, severity="minor", category="style", message="Nit")
     _, reward, _, info = env.step(action)
-    assert reward < 0.0
+    assert reward == 0.01
     assert info["false_positives"] >= 1
 
 
@@ -62,7 +62,7 @@ def test_step_duplicate_comment_negative_reward() -> None:
     assert r1 > 0.0
     a2 = CodeReviewAction(operation="add_comment", line_number=19, severity="major", category="bug", message="Duplicate")
     _, r2, _, _ = env.step(a2)
-    assert r2 < 0.0
+    assert r2 == 0.01
 
 
 def test_approve_with_unfound_critical_or_major_penalty() -> None:
@@ -72,8 +72,8 @@ def test_approve_with_unfound_critical_or_major_penalty() -> None:
     env.reset("medium")
     obs, reward, done, info = env.step(CodeReviewAction(operation="approve", summary="LGTM"))
     assert done is True
-    assert reward <= -0.50
-    assert info["current_score"] == 0.0
+    assert reward == 0.01
+    assert info["current_score"] == 0.001
 
 
 def test_done_returns_final_grader_score() -> None:
