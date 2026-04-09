@@ -6,7 +6,7 @@
 
 ## Abstract
 
-Traditional code review benchmarks measure Large Language Models on a binary: *Did the model flag the correct line?* As frontier models approach ceiling performance on these shallow evaluations, we need environments that test deeper capabilities. This paper introduces two novel evaluation dimensions — the **Semantic "Why" Metric** and **Deceptive Red Herrings** — embedded in a strict, fault-tolerant Python code review environment. We evaluate three frontier LLMs to quantify the gap between surface-level pattern matching and genuine software engineering comprehension.
+Traditional code review benchmarks measure Large Language Models on a binary: *Did the model flag the correct line?* As frontier models approach ceiling performance on these shallow evaluations, we need environments that test deeper capabilities. This paper introduces two novel evaluation dimensions — the **Semantic "Why" Metric** and **Deceptive Red Herrings** — embedded in a strict, fault-tolerant Python code review environment. We evaluate five frontier LLMs to quantify the gap between surface-level pattern matching and genuine software engineering comprehension.
 
 ---
 

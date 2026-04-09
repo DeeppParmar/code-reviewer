@@ -153,7 +153,7 @@ A highly concurrent background worker that:
 - Caches to global dict (Bug: Race condition without `asyncio.Lock`)
 - Retries network calls (Red Herring: `except: pass` inside a retry-backoff is intentional)
 
-The hard task is specifically designed so that even frontier models (GPT-4, Qwen-72B) score in the 0.4–0.7 range, revealing meaningful capability differences.
+The hard task is specifically designed so that even frontier 70B+ models score in the 0.056–0.084 range, revealing meaningful capability differences. In our benchmark, the code-specialized DeepSeek-Coder-V2 scored lowest (0.056), while Mixtral-8x7B and Gemma-2-27B tied highest (0.084).
 
 ---
 
@@ -198,26 +198,26 @@ Both F1 functions (`compute_f1`, `compute_weighted_f1`) handle:
 The `benchmark_models.py` orchestrator enables head-to-head comparisons:
 
 ```python
-MODELS_TO_BENCHMARK = [
+MODELS = [
+    "deepseek-ai/DeepSeek-Coder-V2-Instruct",
     "Qwen/Qwen2.5-72B-Instruct",
     "meta-llama/Llama-3-70b-chat-hf",
     "mistralai/Mixtral-8x7B-Instruct-v0.1",
     "google/gemma-2-27b-it",
-    "deepseek-ai/DeepSeek-Coder-V2-Instruct"
 ]
 ```
 
 Features:
 - **Progressive saving**: Results written to `benchmark_results.json` after each model
 - **Skip completed**: Already-benchmarked models are skipped on re-run
-- **Rate limit cooling**: 10-second pause between models to respect API quotas
+- **Rate limit cooling**: 15-second pause between models to respect API quotas
 - **Timeout protection**: 300-second subprocess timeout per model run
 
 ---
 
 ## 8. Testing Infrastructure
 
-52 automated tests across 7 test files:
+52 automated tests across 8 test files:
 
 | Test File | Coverage |
 |---|---|
@@ -228,5 +228,6 @@ Features:
 | `test_comprehensive.py` | Full multi-task episode simulations |
 | `test_api.py` | FastAPI endpoint response codes, malformed input handling |
 | `test_inference_helpers.py` | JSON extraction, format parsing |
+| `test_performance_quality.py` | Latency budgets, endpoint stability, reward signal variance |
 
 All tests enforce the strict `(0.01, 0.99)` reward boundary, guaranteeing OpenEnv Phase 2 compliance regardless of agent behavior.
