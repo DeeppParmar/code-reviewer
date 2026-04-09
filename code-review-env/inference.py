@@ -53,17 +53,17 @@ def _print_start(task_name: str, env_name: str, model_name: str) -> None:
 def _print_step(step: int, action_str: str, reward: float, done: bool, error: Optional[str]) -> None:
     """Print the mandatory STEP line."""
 
-    reward = max(0.001, min(0.999, reward))
+    reward = max(0.01, min(0.99, reward))
     err = error if error else "null"
-    print(f"[STEP] step={step} action={action_str} reward={reward:.3f} done={_fmt_bool(done)} error={err}")
+    print(f"[STEP] step={step} action={action_str} reward={reward:.2f} done={_fmt_bool(done)} error={err}")
 
 
 def _print_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     """Print the mandatory END line."""
 
-    score = max(0.001, min(0.999, score))
-    rewards_str = ",".join(f"{r:.3f}" for r in rewards)
-    print(f"[END] success={_fmt_bool(success)} steps={steps} score={score:.3f} rewards={rewards_str}")
+    score = max(0.01, min(0.99, score))
+    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+    print(f"[END] success={_fmt_bool(success)} steps={steps} score={score:.2f} rewards={rewards_str}")
 
 
 def _default_system_prompt() -> str:
@@ -633,7 +633,7 @@ def run_task(task_id: str, *, env_base_url: str, api_base_url: str, model_name: 
         success = False
         if steps_taken == 0:
             steps_taken = 1
-        _print_step(steps_taken, "{\"operation\":\"done\"}", 0.00, True, str(e))
+        _print_step(steps_taken, "{\"operation\":\"done\"}", 0.01, True, str(e))
     finally:
         _print_end(success, steps_taken, score, rewards)
 
