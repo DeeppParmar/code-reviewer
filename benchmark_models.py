@@ -21,9 +21,9 @@ from typing import Dict, List, Optional
 # ---------------------------------------------------------------------------
 
 MODELS: List[str] = [
+    "deepseek-ai/DeepSeek-Coder-V2-Instruct",
     "Qwen/Qwen2.5-72B-Instruct",
     "meta-llama/Llama-3-70b-chat-hf",
-    "deepseek-ai/DeepSeek-Coder-V2-Instruct",
 ]
 
 TASK_IDS = ["easy", "medium", "hard"]
@@ -150,7 +150,7 @@ def run_single_model(model: str) -> ModelResult:
 
         if any_quota:
             result.status = "quota_exhausted"
-            print(f"[BENCH] ⚠ API quota was hit during run — results are partial/fallback")
+            print(f"[BENCH] WARNING: API quota was hit during run -- results are partial/fallback")
         else:
             result.status = "completed"
 
@@ -161,11 +161,11 @@ def run_single_model(model: str) -> ModelResult:
         return result
 
     except subprocess.TimeoutExpired:
-        print(f"[BENCH] ✗ TIMEOUT after {SUBPROCESS_TIMEOUT_S}s")
+        print(f"[BENCH] TIMEOUT after {SUBPROCESS_TIMEOUT_S}s")
         return ModelResult(model=model, timestamp=ts, status="timeout", error_msg="subprocess timeout")
 
     except Exception as e:
-        print(f"[BENCH] ✗ ERROR: {e}")
+        print(f"[BENCH] ERROR: {e}")
         return ModelResult(model=model, timestamp=ts, status="error", error_msg=str(e))
 
 
