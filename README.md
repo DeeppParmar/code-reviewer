@@ -87,22 +87,32 @@ A deterministic, OpenEnv-style benchmark environment for evaluating AI code revi
 
 ---
 
-## Multi-Model Benchmarking
+## Benchmark Results (5 Frontier Models)
 
-Run the built-in benchmarking orchestrator to evaluate multiple frontier models:
+| Model | Easy | Medium | Hard | Avg |
+|-------|:----:|:------:|:----:|:---:|
+| Llama-3-70B | 0.435 | 0.398 | 0.072 | 0.302 |
+| Mixtral-8x7B | 0.422 | 0.398 | 0.084 | 0.301 |
+| Qwen-72B | 0.435 | 0.333 | 0.069 | 0.279 |
+| DeepSeek-Coder-V2 ✓ | 0.435 | 0.333 | 0.056 | 0.275 |
+| Gemma-2-27B | 0.350 | 0.333 | 0.084 | 0.256 |
+
+✓ Only fully clean run (no quota limits hit)
+
+**Key findings:**
+- The code-specialized model (DeepSeek-Coder) scored *lowest* on the hard task — code generation training does not transfer to architectural reasoning
+- Gemma-27B matched Mixtral-8x7B on hard despite being half the size — parameter count ≠ reasoning ability
+- All models collapsed below 0.09 on hard, validating the semantic keyword requirement creates a genuine capability ceiling
+
+See [`FINDINGS_PAPER.md`](./FINDINGS_PAPER.md) for full analysis · [`BENCHMARK_LOG.txt`](./BENCHMARK_LOG.txt) for per-step logs.
+
+### Run Your Own Benchmark
 
 ```bash
 HF_TOKEN=<token> python benchmark_models.py
 ```
 
-**Models tested:**
-- `Qwen/Qwen2.5-72B-Instruct`
-- `meta-llama/Llama-3-70b-chat-hf`
-- `mistralai/Mixtral-8x7B-Instruct-v0.1`
-- `google/gemma-2-27b-it`
-- `deepseek-ai/DeepSeek-Coder-V2-Instruct`
-
-Results are saved incrementally to `benchmark_results.json`. The orchestrator handles API rate limits and credit depletion gracefully.
+Results are saved incrementally to `benchmark_results.json` and `benchmark_results.csv`.
 
 ---
 
