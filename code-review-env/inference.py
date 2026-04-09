@@ -521,7 +521,7 @@ def _llm_next_action(
     return normalize_action(action), None, text
 
 
-def run_task(task_id: str, *, env_base_url: str, model_name: str, hf_token: str, timeout_s: int) -> None:
+def run_task(task_id: str, *, env_base_url: str, api_base_url: str, model_name: str, hf_token: str, timeout_s: int) -> None:
     """Run one task episode end-to-end and print required logs."""
 
     env_name = "code-review-env"
@@ -534,7 +534,7 @@ def run_task(task_id: str, *, env_base_url: str, model_name: str, hf_token: str,
 
     start_t = time.time()
     try:
-        llm = OpenAI(base_url=os.getenv("API_BASE_URL", env_base_url), api_key=hf_token)
+        llm = OpenAI(base_url=api_base_url, api_key=hf_token)
         with httpx.Client() as http:
             obs = _call_env_reset(http, env_base_url, task_id)
 
@@ -660,17 +660,20 @@ def _parse_task_runs() -> List[Tuple[str, int]]:
 def main() -> int:
     """Entry point for baseline inference over easy/medium/hard tasks."""
 
+    API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+    MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    
+    # Optional - if you use from_docker_image():
+    LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+
     env_base_url = os.getenv("ENV_BASE_URL", "http://127.0.0.1:7860")
-    model_name = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-    hf_token = os.getenv("HF_TOKEN")
-    if not hf_token:
+    if not HF_TOKEN:
         print("HF_TOKEN is required", file=sys.stderr)
         return 2
 
-    os.environ.setdefault("API_BASE_URL", "https://router.huggingface.co/v1")
-
     for task_id, timeout_s in _parse_task_runs():
-        run_task(task_id, env_base_url=env_base_url, model_name=model_name, hf_token=hf_token, timeout_s=timeout_s)
+        run_task(task_id, env_base_url=env_base_url, api_base_url=API_BASE_URL, model_name=MODEL_NAME, hf_token=HF_TOKEN, timeout_s=timeout_s)
 
     return 0
 
