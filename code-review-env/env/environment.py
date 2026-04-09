@@ -179,6 +179,6 @@ class CodeReviewEnv:
         """Return full current state as a plain dict."""
 
         if self._state is None:
-            return {"task_id": None, "step_number": 0, "comments": [], "running_score": 0.0, "bugs_found": 0, "false_positives": 0}
+            return {"task_id": None, "step_number": 0, "comments": [], "running_score": 0.01, "bugs_found": 0, "false_positives": 0}
         return self._state.to_dict()
 
