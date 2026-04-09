@@ -24,6 +24,8 @@ MODELS: List[str] = [
     "deepseek-ai/DeepSeek-Coder-V2-Instruct",
     "Qwen/Qwen2.5-72B-Instruct",
     "meta-llama/Llama-3-70b-chat-hf",
+    "mistralai/Mixtral-8x7B-Instruct-v0.1",
+    "google/gemma-2-27b-it",
 ]
 
 TASK_IDS = ["easy", "medium", "hard"]
