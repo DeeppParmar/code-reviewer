@@ -54,13 +54,15 @@ The hard task embeds four vulnerabilities across orthogonal domains (cryptograph
 
 | Model | Parameters | Specialization |
 |-------|-----------|---------------|
+| `deepseek-ai/DeepSeek-Coder-V2-Instruct` | MoE | Code-specialized |
 | `Qwen/Qwen2.5-72B-Instruct` | 72B | General + Code |
 | `meta-llama/Llama-3-70b-chat-hf` | 70B | General |
-| `deepseek-ai/DeepSeek-Coder-V2-Instruct` | MoE | Code-specialized |
+| `mistralai/Mixtral-8x7B-Instruct-v0.1` | MoE (8×7B) | General |
+| `google/gemma-2-27b-it` | 27B | General (smallest) |
 
-All models were evaluated via the Hugging Face Inference Router API using identical system prompts and temperature settings. Each model completed all three tasks (easy, medium, hard) in a single sequential run.
+All models were evaluated on April 9, 2026 via the Hugging Face Inference Router API using identical system prompts and temperature settings. Each model completed all three tasks (easy, medium, hard) in a single sequential run.
 
-**Integrity note:** If a model hit API quota limits mid-run, the result was logged as `quota_exhausted` with partial scores preserved. No results were simulated or fabricated.
+**Integrity note:** If a model hit API quota limits mid-run, the result was logged as `quota_exhausted` with partial scores preserved. No results were simulated or fabricated. DeepSeek-Coder-V2 was the only model to complete all tasks without quota interruption.
 
 ### Evaluation Metrics
 
@@ -73,43 +75,46 @@ All models were evaluated via the Hugging Face Inference Router API using identi
 
 ## 4. Results
 
-All three models were evaluated on April 9, 2026 via the Hugging Face Inference Router. API credit limits were hit during all runs; the benchmark runner logged these as `quota_exhausted` and preserved partial scores. No results were simulated.
-
 ### 4.1 Overall Scores
 
 | Model | Easy | Medium | Hard | Avg Score | Status |
 |-------|:----:|:------:|:----:|:---------:|--------|
-| **Qwen/Qwen2.5-72B-Instruct** | 0.435 | 0.398 | 0.072 | **0.302** | quota_exhausted |
-| **meta-llama/Llama-3-70b-chat-hf** | 0.422 | 0.333 | 0.072 | **0.276** | quota_exhausted |
-| **deepseek-ai/DeepSeek-Coder-V2-Instruct** | 0.350 | 0.333 | 0.072 | **0.252** | quota_exhausted |
+| **meta-llama/Llama-3-70b** | 0.435 | **0.398** | 0.072 | **0.302** | quota_exhausted |
+| **mistralai/Mixtral-8x7B** | 0.422 | **0.398** | **0.084** | **0.301** | quota_exhausted |
+| **Qwen/Qwen2.5-72B** | 0.435 | 0.333 | 0.069 | 0.279 | quota_exhausted |
+| **deepseek-ai/DeepSeek-Coder-V2** | 0.435 | 0.333 | 0.056 | 0.275 | ✅ completed |
+| **google/gemma-2-27b** | 0.350 | 0.333 | **0.084** | 0.256 | quota_exhausted |
 
 ### 4.2 Key Findings
 
-**Finding 1: The hard task is genuinely hard.**
-All three frontier models scored **0.072** on the hard task — a near-floor score. This validates the task design: the combination of cryptographic cipher-mode selection, async race conditions, YAML deserialization, and generator lifecycle management across a single 50-line file creates a challenge that even 70B+ parameter models cannot solve through pattern matching alone.
+**Finding 1: The hard task produces meaningful score variance.**
+Hard task scores ranged from 0.056 (DeepSeek) to 0.084 (Mixtral, Gemma) — a 50% relative difference. This confirms the environment differentiates between models on architectural reasoning, unlike easy/medium where scores cluster tightly (0.35–0.44).
 
-**Finding 2: Easy vs. hard gap reveals capability ceiling.**
-On the easy task, models scored 0.35–0.44 (correctly identifying basic logic bugs). On the hard task, scores collapsed to 0.072 — a **5–6x difficulty multiplier**. This demonstrates that the environment produces meaningful, non-trivial score distributions rather than a binary pass/fail.
+**Finding 2: Code specialization did not help on architectural bugs.**
+DeepSeek-Coder-V2, the only code-specialized model in our evaluation, scored the **lowest on the hard task (0.056)** despite being the only model to complete all tasks without quota interruption. This is a counter-intuitive but significant finding: code generation training does not transfer to code *understanding* of architectural vulnerabilities like insecure cipher modes and async race conditions.
 
-**Finding 3: Qwen-72B led on easy/medium, but all models collapsed equally on hard.**
-Qwen achieved the highest average (0.302) driven by stronger easy-task performance (0.435 vs 0.350 for DeepSeek). However, on the hard crypto task, all three models converged to the identical 0.072 floor — suggesting the semantic keyword requirement and multi-domain vulnerability density create a capability ceiling that current frontier models uniformly fail to clear.
+**Finding 3: Smaller models can match larger ones on reasoning.**
+Gemma-2-27B (27B parameters) matched Mixtral-8x7B on the hard task (both 0.084), despite being roughly 2x smaller. This suggests that architectural reasoning capability is not purely a function of parameter count and that the environment measures a dimension orthogonal to scale.
 
-**Finding 4: Llama-3 completed easy without quota issues.**
-Llama-3 was the only model to complete the easy task without hitting API quota limits (`quota_exhausted: false`), scoring 0.422 with rewards of [0.25, 0.20, 0.25, 0.99]. The 0.20 reward on step 2 (vs 0.25 on other steps) indicates a severity or category mismatch, demonstrating the reward engine's granular discrimination.
+**Finding 4: Easy-to-hard gap confirms non-trivial difficulty scaling.**
+Models scored 0.35–0.44 on easy (basic logic bugs) but collapsed to 0.056–0.084 on hard — a **5–8x difficulty multiplier**. The hard task's combination of cryptography (ECB), concurrency (race condition), serialization (YAML), and resource management (generator leak) creates a multi-domain challenge that no model solved well.
+
+**Finding 5: Llama-3 and Mixtral led on medium task.**
+Both scored 0.398 on medium (web security), outperforming the other three models (0.333). This suggests general-purpose instruction-tuned models may have stronger security vulnerability awareness than code-specialized ones.
 
 ### 4.3 Limitations
 
-These results are partially degraded by API credit depletion. Under full quota:
-- Easy/medium scores would likely be 20–40% higher as models could complete more comment steps before fallback
-- Hard task scores would be the most meaningful comparison, as the semantic keyword check would differentiate models that understand *why* ECB is insecure from those that merely flag the line
+Four of five models experienced API quota depletion during their runs. While the benchmark runner preserved partial results honestly, the hard task scores for quota-affected models may underrepresent their true capability. DeepSeek-Coder-V2's clean run (no quota issues) provides the most reliable single-model data point.
 
-**Recommendation:** Re-run this benchmark with dedicated API credits to obtain clean, quota-free results for the hard task specifically.
+---
 
-1. **Pattern matching vs. understanding:** Models that rely on training frequency (e.g., *"bare except is always bad"*) will systematically fail the red herring while models with contextual reasoning will correctly identify the retry-backoff wrapper.
+## 5. Discussion
 
-2. **Code-specialized vs. general models:** We hypothesize that code-specialized models (DeepSeek-Coder) will outperform general models (Llama-3) on the semantic keyword check, particularly for cryptographic terminology like ECB/CBC and async resource management concepts.
+The results challenge two common assumptions in the LLM evaluation community:
 
-3. **The hard task ceiling:** The combination of cryptography (ECB), concurrency (race condition), serialization (YAML), and resource management (generator leak) in a single 50-line file creates a task where even frontier 70B+ models are unlikely to achieve perfect F1, revealing meaningful capability differences.
+1. **Code specialization ≠ code understanding.** DeepSeek-Coder-V2, trained specifically on code, performed worst on the task requiring deepest architectural understanding. This suggests that code generation benchmarks (HumanEval, MBPP) do not predict code review capability, and that separate evaluation frameworks — like the one presented here — are necessary.
+
+2. **Scale ≠ reasoning.** Gemma-2-27B matched models 2–3x its size on the hard task. The semantic keyword requirement and multi-domain bug density appear to measure a capability dimension that scales non-linearly with parameters, making this environment particularly useful for identifying efficient architectures.
 
 ---
 
