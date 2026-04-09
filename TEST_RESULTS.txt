@@ -1,0 +1,78 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0
+rootdir: C:\Users\Abhi\OneDrive\Documents\GitHub\code-reviewer
+configfile: pyproject.toml
+plugins: anyio-4.12.1
+collected 52 items
+
+tests\test_advanced_cases.py .........                                   [ 17%]
+tests\test_api.py ......                                                 [ 28%]
+tests\test_comprehensive.py ...                                          [ 34%]
+tests\test_environment.py ........                                       [ 50%]
+tests\test_graders.py ......                                             [ 61%]
+tests\test_inference_helpers.py ...........                              [ 82%]
+tests\test_performance_quality.py ....                                   [ 90%]
+tests\test_rewards.py .....                                              [100%]
+
+============================== warnings summary ===============================
+code-review-env/tests/test_advanced_cases.py::test_api_step_rejects_malformed_body_with_422
+code-review-env/tests/test_api.py::test_server_does_not_crash_on_malformed_json
+  C:\Users\Abhi\AppData\Roaming\Python\Python313\site-packages\httpx\_models.py:408: DeprecationWarning: Use 'content=<...>' to upload raw bytes/text content.
+    headers, stream = encode_request(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED tests\test_advanced_cases.py::test_add_comment_missing_line_number_returns_negative_reward_and_error
+PASSED tests\test_advanced_cases.py::test_bug_matching_within_plus_minus_five_is_positive
+PASSED tests\test_advanced_cases.py::test_comment_outside_plus_minus_five_is_false_positive
+PASSED tests\test_advanced_cases.py::test_red_herring_penalty_is_applied_on_hard_task
+PASSED tests\test_advanced_cases.py::test_approve_bonus_when_no_critical_or_major_remaining
+PASSED tests\test_advanced_cases.py::test_request_changes_reward_depends_on_evidence
+PASSED tests\test_advanced_cases.py::test_done_score_varies_with_behavior
+PASSED tests\test_advanced_cases.py::test_api_root_route_returns_200
+PASSED tests\test_advanced_cases.py::test_api_step_rejects_malformed_body_with_422
+PASSED tests\test_api.py::test_post_reset_returns_200
+PASSED tests\test_api.py::test_post_reset_invalid_task_id_returns_400_or_422
+PASSED tests\test_api.py::test_post_step_returns_200
+PASSED tests\test_api.py::test_get_state_returns_200
+PASSED tests\test_api.py::test_get_health_returns_200_ok
+PASSED tests\test_api.py::test_server_does_not_crash_on_malformed_json
+PASSED tests\test_comprehensive.py::test_each_task_reset_and_done_path_is_stable
+PASSED tests\test_comprehensive.py::test_done_is_deterministic_for_same_comment_set
+PASSED tests\test_comprehensive.py::test_step_limit_penalty_applies_when_exceeded_without_done
+PASSED tests\test_environment.py::test_reset_returns_observation
+PASSED tests\test_environment.py::test_reset_twice_clears_state
+PASSED tests\test_environment.py::test_step_add_comment_near_bug_positive_reward
+PASSED tests\test_environment.py::test_step_add_comment_false_positive_negative_reward
+PASSED tests\test_environment.py::test_step_duplicate_comment_negative_reward
+PASSED tests\test_environment.py::test_approve_with_unfound_critical_or_major_penalty
+PASSED tests\test_environment.py::test_done_returns_final_grader_score
+PASSED tests\test_environment.py::test_step_number_increments_and_episode_ends_at_max_steps
+PASSED tests\test_graders.py::test_grader_returns_zero_when_no_bugs_found
+PASSED tests\test_graders.py::test_grader_returns_one_when_all_bugs_found_with_correct_labels
+PASSED tests\test_graders.py::test_grader_partial_is_strictly_between_zero_and_one
+PASSED tests\test_graders.py::test_grader_is_deterministic_across_multiple_calls
+PASSED tests\test_graders.py::test_weighted_f1_rewards_critical_more_than_minor
+PASSED tests\test_graders.py::test_hard_grader_ignores_red_herring_as_real_bug
+PASSED tests\test_inference_helpers.py::test_normalize_action_native_shape
+PASSED tests\test_inference_helpers.py::test_normalize_action_type_comment
+PASSED tests\test_inference_helpers.py::test_normalize_action_approve_request_done
+PASSED tests\test_inference_helpers.py::test_load_system_prompt_default
+PASSED tests\test_inference_helpers.py::test_load_system_prompt_from_file
+PASSED tests\test_inference_helpers.py::test_resolve_repo_prompt_file
+PASSED tests\test_inference_helpers.py::test_calibrate_labels_for_hard_patterns
+PASSED tests\test_inference_helpers.py::test_canonical_line_mapping_for_hard
+PASSED tests\test_inference_helpers.py::test_classify_assignment_in_condition
+PASSED tests\test_inference_helpers.py::test_calibrate_easy_labels
+PASSED tests\test_inference_helpers.py::test_get_benchmark_action_easy
+PASSED tests\test_performance_quality.py::test_env_reset_and_step_latency_budget
+PASSED tests\test_performance_quality.py::test_api_endpoint_stability_under_repeated_requests
+PASSED tests\test_performance_quality.py::test_long_horizon_mixed_actions_keeps_state_consistent
+PASSED tests\test_performance_quality.py::test_reward_signal_is_not_constant_across_behavior_patterns
+PASSED tests\test_rewards.py::test_add_comment_near_real_bug_positive
+PASSED tests\test_rewards.py::test_add_comment_on_red_herring_is_minus_point_two
+PASSED tests\test_rewards.py::test_add_comment_false_positive_is_minus_point_one
+PASSED tests\test_rewards.py::test_approve_with_unfound_critical_bugs_is_minus_point_five
+PASSED tests\test_rewards.py::test_efficiency_bonus_triggers
+======================= 52 passed, 2 warnings in 2.39s ========================
