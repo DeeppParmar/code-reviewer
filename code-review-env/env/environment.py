@@ -173,7 +173,7 @@ class CodeReviewEnv:
             max_steps=self._max_steps,
             review_status="submitted" if done else "in_review",
         )
-        return obs, float(reward), bool(done), info
+        return obs, float(round(min(max(reward, 0.01), 0.99), 3)), bool(done), info
 
     def state(self) -> dict:
         """Return full current state as a plain dict."""
