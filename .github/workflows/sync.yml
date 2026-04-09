@@ -19,6 +19,6 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # Replace HF_USERNAME and SPACE_NAME with your specific details
-          git push --force https://DeepParmar:$HF_TOKEN@huggingface.co/spaces/DeepParmar/code-review main
+          # Push to Hugging Face Space
+          git push --force https://Ashketchum007:$HF_TOKEN@huggingface.co/spaces/Ashketchum007/Code-demo main
 

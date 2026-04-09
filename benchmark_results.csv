@@ -1,0 +1,7 @@
+model,task,score,steps,success,quota_exhausted,status,timestamp
+deepseek-ai/DeepSeek-Coder-V2-Instruct,easy,0.422,4,False,False,completed,2026-04-09T10:57:31.780083+00:00
+deepseek-ai/DeepSeek-Coder-V2-Instruct,medium,0.333,6,False,False,completed,2026-04-09T10:57:31.780083+00:00
+deepseek-ai/DeepSeek-Coder-V2-Instruct,hard,0.064,9,False,False,completed,2026-04-09T10:57:31.780083+00:00
+Qwen/Qwen2.5-72B-Instruct,easy,0.422,4,False,False,completed,2026-04-09T10:59:06.796587+00:00
+Qwen/Qwen2.5-72B-Instruct,medium,0.287,7,False,False,completed,2026-04-09T10:59:06.796587+00:00
+Qwen/Qwen2.5-72B-Instruct,hard,0.059,11,False,False,completed,2026-04-09T10:59:06.796587+00:00
