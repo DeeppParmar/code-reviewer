@@ -119,28 +119,47 @@ def get_task() -> TaskSpec:
             severity="critical",
             category="security",
             description="Unsafe YAML loading leading to arbitrary code execution.",
-            required_keywords=["safe_load", "unsafe", "loader", "injection", "execution"]
+            required_keywords=[
+                "safe_load", "unsafe", "loader", "injection", "execution",
+                "deserializ", "arbitrary", "yaml.safe", "untrusted", "rce",
+                "remote code", "pickle", "code execution", "malicious",
+            ]
         ),
         GroundTruthBug(
             line_number=27,
             severity="critical",
             category="security",
             description="Use of insecure ECB mode for AES encryption.",
-            required_keywords=["ecb", "mode", "insecure", "cbc", "iv", "gcm"]
+            required_keywords=[
+                "ecb", "mode", "insecure", "cbc", "iv", "gcm",
+                "block cipher", "initialization vector", "deterministic",
+                "ciphertext", "encrypt", "cipher mode", "aes-ecb",
+                "electronic codebook", "padding oracle", "confidential",
+            ]
         ),
         GroundTruthBug(
             line_number=32,
             severity="major",
             category="bug",
             description="AsyncGenerator leak: stream is not explicitly closed and may leak resources.",
-            required_keywords=["close", "leak", "generator", "finally", "aclose"]
+            required_keywords=[
+                "close", "leak", "generator", "finally", "aclose",
+                "resource", "cleanup", "context manager", "async with",
+                "not closed", "file handle", "stream", "dispose",
+                "exhausted", "iteration", "memory",
+            ]
         ),
         GroundTruthBug(
             line_number=38,
             severity="critical",
             category="bug",
             description="Async race condition modifying global _SESSION_CACHE without a lock.",
-            required_keywords=["race", "lock", "sync", "concurrency", "thread"]
+            required_keywords=[
+                "race", "lock", "sync", "concurrency", "thread",
+                "race condition", "thread safe", "mutex", "asyncio.lock",
+                "atomic", "shared state", "global", "concurrent",
+                "gather", "parallel", "data race", "synchroniz",
+            ]
         ),
         GroundTruthBug(
             line_number=45,

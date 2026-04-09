@@ -75,4 +75,4 @@ PASSED tests\test_rewards.py::test_add_comment_on_red_herring_is_minus_point_two
 PASSED tests\test_rewards.py::test_add_comment_false_positive_is_minus_point_one
 PASSED tests\test_rewards.py::test_approve_with_unfound_critical_bugs_is_minus_point_five
 PASSED tests\test_rewards.py::test_efficiency_bonus_triggers
-======================= 52 passed, 2 warnings in 2.39s ========================
+======================= 52 passed, 2 warnings in 2.10s ========================
