@@ -53,7 +53,7 @@ def _print_start(task_name: str, env_name: str, model_name: str) -> None:
 def _print_step(step: int, action_str: str, reward: float, done: bool, error: Optional[str]) -> None:
     """Print the mandatory STEP line."""
 
-    reward = max(0.01, min(0.99, reward))
+    reward = max(1e-6, min(1 - 1e-6, reward))
     err = error if error else "null"
     print(f"[STEP] step={step} action={action_str} reward={reward:.2f} done={_fmt_bool(done)} error={err}")
 
@@ -61,9 +61,9 @@ def _print_step(step: int, action_str: str, reward: float, done: bool, error: Op
 def _print_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     """Print the mandatory END line."""
 
-    score = max(0.01, min(0.99, score))
+    score = max(1e-6, min(1 - 1e-6, score))
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={_fmt_bool(success)} steps={steps} score={score:.2f} rewards={rewards_str}")
+    print(f"[END] success={_fmt_bool(success)} steps={steps} score={score:.3f} rewards={rewards_str}")
 
 
 def _default_system_prompt() -> str:
@@ -628,7 +628,9 @@ def run_task(task_id: str, *, env_base_url: str, api_base_url: str, model_name: 
                 if done:
                     break
 
-            success = score >= 0.5
+        score = sum(rewards) / len(rewards) if rewards else 0.0
+        score = max(1e-6, min(score, 1 - 1e-6))
+        success = score >= 0.5
     except Exception as e:
         success = False
         if steps_taken == 0:
