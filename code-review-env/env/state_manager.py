@@ -95,7 +95,7 @@ class StateManager:
             "task_id": self.task_id,
             "step_number": self.step_number,
             "comments": [c.model_dump() for c in self.comments],
-            "running_score": max(0.0, min(1.0, self.cumulative_reward)),
+            "running_score": max(0.001, min(0.999, self.cumulative_reward)),
             "bugs_found": len(self.correctly_identified_bug_lines),
             "false_positives": self.get_false_positive_count(),
             "red_herring_flags": self.red_herring_flags,

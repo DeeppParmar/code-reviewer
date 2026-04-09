@@ -25,9 +25,9 @@ def compute_f1(correctly_identified: int, total_comments: int, total_real_bugs: 
     precision = correctly_identified / total_comments if total_comments > 0 else 0.0
     recall = correctly_identified / total_real_bugs if total_real_bugs > 0 else 0.0
     if precision + recall == 0.0:
-        return 0.0
+        return 0.001
     f1 = 2.0 * precision * recall / (precision + recall)
-    return round(f1, 4)
+    return max(0.001, min(0.999, round(f1, 4)))
 
 
 def _severity_weight(severity: str) -> float:
@@ -64,12 +64,8 @@ def compute_weighted_f1(found_bugs: List[GroundTruthBug], all_bugs: List[GroundT
     weighted_recall = found_weight / total_real_weight if total_real_weight > 0 else 0.0
 
     if weighted_precision + weighted_recall == 0.0:
-        return 0.0
+        return 0.001
 
     score = 2.0 * weighted_precision * weighted_recall / (weighted_precision + weighted_recall)
-    if score < 0.0:
-        return 0.0
-    if score > 1.0:
-        return 1.0
-    return round(score, 4)
+    return max(0.001, min(0.999, round(score, 4)))
 
