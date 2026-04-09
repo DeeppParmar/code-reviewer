@@ -60,6 +60,7 @@ def _print_step(step: int, action_str: str, reward: float, done: bool, error: Op
 def _print_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     """Print the mandatory END line."""
 
+    score = max(0.001, min(0.999, score))
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(f"[END] success={_fmt_bool(success)} steps={steps} score={score:.3f} rewards={rewards_str}")
 
