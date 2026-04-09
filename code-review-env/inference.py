@@ -53,8 +53,9 @@ def _print_start(task_name: str, env_name: str, model_name: str) -> None:
 def _print_step(step: int, action_str: str, reward: float, done: bool, error: Optional[str]) -> None:
     """Print the mandatory STEP line."""
 
+    reward = max(0.001, min(0.999, reward))
     err = error if error else "null"
-    print(f"[STEP] step={step} action={action_str} reward={reward:.2f} done={_fmt_bool(done)} error={err}")
+    print(f"[STEP] step={step} action={action_str} reward={reward:.3f} done={_fmt_bool(done)} error={err}")
 
 
 def _print_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
